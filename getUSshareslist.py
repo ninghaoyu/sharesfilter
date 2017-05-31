@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 #from bs4 import BeautifulSoup
-import socket,re,os
+import socket,regex,os,json,sys
 import urllib.request
 from pyquery import PyQuery as pq
 
@@ -10,17 +10,30 @@ req_headers = {
 	}
 PAGES=139
 BASEURL='https://xueqiu.com/S/?page=%s&exchange=US'
-URLS=[ BASEURL % i for i in range(1,PAGES+1) ]
+URLS=[ BASEURL.strip() % i for i in range(1,PAGES+1) ]
 
-print(URLS)
 
-os._exit(0)
+#print(URLS)
 
-reqobj = urllib.request.Request(BASEURL,headers=req_headers)
+#os._exit(0)
+allShares=[]
 
-req = urllib.request.urlopen(reqobj)
-htm_script=pq(req.read().decode('utf-8'))('script')
+for url in URLS:
+	reqobj = urllib.request.Request(url,headers=req_headers)
+	req = urllib.request.urlopen(reqobj)
+	htm_script=pq(req.read().decode('utf-8'))('script')
+	m = regex.search('stockList.searchResult=(.*);',htm_script.text())
+	#print(json.dumps(m[1],indent=4, separators=(',', ': ')))
+	stocks = json.loads(m[1])
+	#print(stocks["stocks"]["stocks"])
+	#print(m[1])
+	allShares += stocks["stocks"]["stocks"]
 
-print(htm_script.text())
+	#print(json.dumps(m[1], sys.stdout,sort_keys=True, indent=2))
+	#json.dump(obj, outfile, sort_keys=sort_keys, indent=4)
+	
+
+
+print(allShares)
 
 
